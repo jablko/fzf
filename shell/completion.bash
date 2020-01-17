@@ -31,9 +31,6 @@ fi
 
 ###########################################################
 
-# To redraw line after fzf closes (printf '\e[5n')
-bind '"\e[0n": redraw-current-line'
-
 __fzfcmd_complete() {
   [ -n "$TMUX_PANE" ] && [ "${FZF_TMUX:-0}" != 0 ] && [ ${LINES:-40} -gt 15 ] &&
     echo "fzf-tmux -d${FZF_TMUX_HEIGHT:-40%}" || echo "fzf"
@@ -167,7 +164,6 @@ __fzf_generic_path_completion() {
         else
           COMPREPLY=( "$cur" )
         fi
-        printf '\e[5n'
         return 0
       fi
       dir=$(dirname "$dir")
@@ -200,7 +196,6 @@ _fzf_complete() {
     else
       COMPREPLY=("$cur")
     fi
-    printf '\e[5n'
     return 0
   else
     shift
@@ -227,7 +222,6 @@ _fzf_complete_kill() {
   local selected fzf
   fzf="$(__fzfcmd_complete)"
   selected=$(command ps -ef | sed 1d | FZF_DEFAULT_OPTS="--height ${FZF_TMUX_HEIGHT:-50%} --min-height 15 --reverse $FZF_DEFAULT_OPTS --preview 'echo {}' --preview-window down:3:wrap $FZF_COMPLETION_OPTS" $fzf -m | awk '{print $2}' | tr '\n' ' ')
-  printf '\e[5n'
 
   if [ -n "$selected" ]; then
     COMPREPLY=( "$selected" )
