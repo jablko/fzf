@@ -56,7 +56,16 @@ __fzf_history__() (
   line=$(
     builtin fc -lnr -2147483648 |
       perl -p -l0 -e 'BEGIN { getc; $/ = "\n\t" } s/^[ *]//; $_ = '"$1"' - $. . "\t$_"' |
-      FZF_DEFAULT_OPTS="--height ${FZF_TMUX_HEIGHT:-40%} $FZF_DEFAULT_OPTS --tiebreak=index --bind=ctrl-r:toggle-sort $FZF_CTRL_R_OPTS +m --read0" $(__fzfcmd)
+      FZF_DEFAULT_OPTS="
+        --height $(printf %q "${FZF_TMUX_HEIGHT:-40%}")
+        $FZF_DEFAULT_OPTS
+        --tiebreak index
+        --bind ctrl-r:toggle-sort
+        $FZF_CTRL_R_OPTS
+        --no-multi
+        --expect esc
+        --read0
+      " $(__fzfcmd)
   )
   echo "${line#*$'\t'}"
 )
