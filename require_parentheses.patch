@@ -1,0 +1,59 @@
+diff --git a/lib/rubocop/cop/style/method_call_with_args_parentheses/omit_parentheses.rb b/lib/rubocop/cop/style/method_call_with_args_parentheses/omit_parentheses.rb
+index dc8505662..82d160533 100644
+--- a/lib/rubocop/cop/style/method_call_with_args_parentheses/omit_parentheses.rb
++++ b/lib/rubocop/cop/style/method_call_with_args_parentheses/omit_parentheses.rb
+@@ -87,18 +87,19 @@ module RuboCop
+           end
+ 
+           def call_with_ambiguous_arguments?(node)
+-            call_with_braced_block?(node) ||
++            ambiguous_block_association?(node) ||
+               call_as_argument_or_chain?(node) ||
+               hash_literal_in_arguments?(node) ||
+-              node.descendants.any? do |n|
++              node.child_nodes.any? do |n|
+                 ambigious_literal?(n) || logical_operator?(n) ||
+-                  call_with_braced_block?(n)
++                  ambiguous_block_association?(n)
+               end
+           end
+ 
+-          def call_with_braced_block?(node)
++          def ambiguous_block_association?(node)
+             (node.send_type? || node.super_type?) &&
+-              node.block_node && node.block_node.braces?
++              node.last_argument&.block_type? &&
++              !node.last_argument.send_node.arguments?
+           end
+ 
+           def call_as_argument_or_chain?(node)
+diff --git a/lib/rubocop/cop/style/method_call_with_args_parentheses/require_parentheses.rb b/lib/rubocop/cop/style/method_call_with_args_parentheses/require_parentheses.rb
+index b9308e760..2cacbe141 100644
+--- a/lib/rubocop/cop/style/method_call_with_args_parentheses/require_parentheses.rb
++++ b/lib/rubocop/cop/style/method_call_with_args_parentheses/require_parentheses.rb
+@@ -6,10 +6,12 @@ module RuboCop
+       class MethodCallWithArgsParentheses
+         # Style require_parentheses
+         module RequireParentheses
++          include OmitParentheses
++
+           def on_send(node)
+-            return if ignored_method?(node.method_name)
+-            return if matches_ignored_pattern?(node.method_name)
+-            return if eligible_for_parentheses_omission?(node)
++            return super if ignored_method?(node.method_name)
++            return super if matches_ignored_pattern?(node.method_name)
++            return super if eligible_for_parentheses_omission?(node)
+             return unless node.arguments? && !node.parenthesized?
+ 
+             add_offense(node)
+@@ -19,6 +21,9 @@ module RuboCop
+           alias on_yield on_send
+ 
+           def autocorrect(node)
++            return super if ignored_method?(node.method_name)
++            return super if matches_ignored_pattern?(node.method_name)
++            return super if eligible_for_parentheses_omission?(node)
+             lambda do |corrector|
+               corrector.replace(args_begin(node), '(')
+ 

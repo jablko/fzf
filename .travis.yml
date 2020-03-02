@@ -16,11 +16,14 @@ addons:
       - fish
       - tmux
     update: true
-install: gem install minitest rubocop rubocop-minitest rubocop-performance
+install:
+  - gem install minitest rubocop rubocop-minitest rubocop-performance
+  - gem open rubocop --editor 'patch --strip 1 --directory' < require_parentheses.patch
 script:
   - make test
   # LC_ALL=C to avoid escape codes in
   # printf %q $'\355\205\214\354\212\244\355\212\270' on macOS. Bash on
   # macOS is built without HANDLE_MULTIBYTE?
   - make install && ./install --all && LC_ALL=C tmux new-session -d && ruby test/test_go.rb --verbose
-  - rubocop --require rubocop-minitest --require rubocop-performance
+  - rubocop --auto-correct --debug --disable-uncorrectable --require rubocop-minitest --require rubocop-performance
+  - git diff --no-color --exit-code

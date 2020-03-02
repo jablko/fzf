@@ -6,9 +6,12 @@ Lint/ShadowingOuterLocalVariable:
   Enabled: false
 Style/MethodCallWithArgsParentheses:
   Enabled: true
+  IgnoreMacros: false
   IgnoredMethods:
     - assert
+    - attr_reader
     - exit
+    - include
     - paste
     - puts
     - raise
